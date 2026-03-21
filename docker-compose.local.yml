@@ -1,0 +1,13 @@
+# Local development overrides — use with:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up
+#
+# Replaces the prod nginx config (SSL, bennetto.com) with an HTTP-only
+# config for localhost. Access the site at http://localhost:8080
+
+services:
+  nginx:
+    ports:
+      - "8080:80"
+    volumes:
+      # Mounts after the base conf.d, so this shadows it (last mount wins)
+      - ./nginx/local.conf.d:/etc/nginx/conf.d:ro
