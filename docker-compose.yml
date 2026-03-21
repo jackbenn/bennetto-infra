@@ -1,0 +1,44 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./website:/var/www/html:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro   # for cert renewal challenges
+    depends_on:
+      - gengo-web
+      - taking-the-story
+    restart: unless-stopped
+
+  gengo-web:
+    build:
+      context: .
+      dockerfile: docker/gengo-web.Dockerfile
+    restart: unless-stopped
+    expose:
+      - "5000"
+
+  gengo-ws:
+    build:
+      context: .
+      dockerfile: docker/gengo-ws.Dockerfile
+    restart: unless-stopped
+    expose:
+      - "8765"
+
+  taking-the-story:
+    build:
+      context: .
+      dockerfile: docker/taking-the-story.Dockerfile
+    volumes:
+      - taking_the_story_data:/data
+    restart: unless-stopped
+    expose:
+      - "8000"
+
+volumes:
+  taking_the_story_data:

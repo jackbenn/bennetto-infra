@@ -1,0 +1,8 @@
+# ignore db files if ever checked out locally outside a container
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+.venv/

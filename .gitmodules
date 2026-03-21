@@ -1,0 +1,9 @@
+[submodule "gengo"]
+	path = gengo
+	url = https://github.com/jackbenn/gengo
+[submodule "taking_the_story"]
+	path = taking_the_story
+	url = https://github.com/jackbenn/taking_the_story
+[submodule "website"]
+	path = website
+	url = https://github.com/jackbenn/website
