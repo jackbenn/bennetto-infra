@@ -27,8 +27,8 @@ services:
       context: .
       dockerfile: docker/gengo-ws.Dockerfile
     restart: unless-stopped
-    expose:
-      - "8765"
+    ports:
+      - "8765:8765"
 
   taking-the-story:
     build:

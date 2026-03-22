@@ -11,3 +11,8 @@ services:
     volumes:
       # Mounts after the base conf.d, so this shadows it (last mount wins)
       - ./nginx/local.conf.d:/etc/nginx/conf.d:ro
+
+  # gengo JS connects directly to ws://hostname:8765, bypassing nginx
+  gengo-ws:
+    ports:
+      - "8765:8765"
