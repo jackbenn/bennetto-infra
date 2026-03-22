@@ -1,14 +1,13 @@
 FROM python:3.11-slim
 
-# psycopg2 needs libpq; gcc for the build
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libpq-dev gcc \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
+# requirements.txt lists psycopg2 (source build); swap for the binary wheel
+# which bundles libpq and needs no compiler or system packages
 COPY gengo/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN sed 's/^psycopg2$/psycopg2-binary/' requirements.txt \
+    | pip install --no-cache-dir -r /dev/stdin
+RUN pip install --no-cache-dir gunicorn
 
 COPY gengo/ .
 

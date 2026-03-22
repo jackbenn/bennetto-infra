@@ -1,13 +1,10 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libpq-dev gcc \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 COPY gengo/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN sed 's/^psycopg2$/psycopg2-binary/' requirements.txt \
+    | pip install --no-cache-dir -r /dev/stdin
 
 COPY gengo/ .
 
