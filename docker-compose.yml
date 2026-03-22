@@ -7,8 +7,6 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./website:/var/www/html:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /var/www/certbot:/var/www/certbot:ro   # for cert renewal challenges
     depends_on:
       - gengo-web
       - taking-the-story
