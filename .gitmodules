@@ -7,3 +7,6 @@
 [submodule "website"]
 	path = website
 	url = https://github.com/jackbenn/website
+[submodule "bookclub"]
+	path = bookclub
+	url = https://github.com/jackbenn/bookclub

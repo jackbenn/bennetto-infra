@@ -10,6 +10,7 @@ services:
     depends_on:
       - gengo-web
       - taking-the-story
+      - bookclub
     restart: unless-stopped
 
   gengo-web:
@@ -38,5 +39,18 @@ services:
     expose:
       - "8000"
 
+  bookclub:
+    build:
+      context: ./bookclub
+      dockerfile: Dockerfile
+    volumes:
+      - bookclub_data:/data
+    env_file:
+      - ./bookclub.env
+    restart: unless-stopped
+    expose:
+      - "8000"
+
 volumes:
   taking_the_story_data:
+  bookclub_data:
