@@ -71,15 +71,18 @@ echo "-> Pushing bennetto-infra..."
 git push
 
 # --- Step 7: Deploy on EC2 ---
+# The build runs detached (nohup) so it survives SSH disconnections.
+# Output is written to /tmp/deploy.log on the server.
+# Run `ssh website tail -f /tmp/deploy.log` to follow progress.
 echo "-> Deploying to $SSH_HOST..."
 ssh "$SSH_HOST" "
     set -euo pipefail
     cd $REMOTE_DIR
     echo '  -> Pulling latest...'
     git pull --recurse-submodules
-    echo '  -> Restarting services...'
-    docker compose up -d --build
-    echo '  -> Done.'
+    echo '  -> Starting build (detached)...'
+    nohup docker compose up -d --build > /tmp/deploy.log 2>&1 &
+    echo \"  -> Build running as PID \$! — follow with: ssh $SSH_HOST tail -f /tmp/deploy.log\"
 "
 
-echo "Deploy complete."
+echo "Deploy initiated. Run 'ssh $SSH_HOST tail -f /tmp/deploy.log' to follow progress."
