@@ -50,11 +50,18 @@ while IFS= read -r line; do
     elif [[ "$ahead" -gt 0 ]]; then
         echo "-> Pushing $name ($ahead commit(s) ahead of origin)..."
         git -C "$name" push
-        git add "$name"
-        updated_modules="$updated_modules $name"
     elif [[ "$behind" -gt 0 ]]; then
         echo "-> Pulling $name ($behind commit(s) behind origin)..."
         git -C "$name" pull --ff-only
+    fi
+
+    # Stage the pointer whenever the checked-out commit differs from what's
+    # currently recorded here — not just when the ahead/behind check above
+    # fired. Catches drift from anything that synced the submodule folder
+    # outside this script (e.g. a manual `git -C <name> pull`), which
+    # ahead/behind-vs-origin alone can miss once the folder already matches
+    # its own origin.
+    if [[ -n "$(git status --porcelain -- "$name")" ]]; then
         git add "$name"
         updated_modules="$updated_modules $name"
     fi
