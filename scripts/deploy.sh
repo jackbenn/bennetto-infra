@@ -60,8 +60,9 @@ while IFS= read -r line; do
     # fired. Catches drift from anything that synced the submodule folder
     # outside this script (e.g. a manual `git -C <name> pull`), which
     # ahead/behind-vs-origin alone can miss once the folder already matches
-    # its own origin.
-    if [[ -n "$(git status --porcelain -- "$name")" ]]; then
+    # its own origin. Uncommitted files inside a submodule don't count: they
+    # aren't deployed, and staging them would commit nothing.
+    if ! git diff --quiet --ignore-submodules=dirty -- "$name"; then
         git add "$name"
         updated_modules="$updated_modules $name"
     fi
