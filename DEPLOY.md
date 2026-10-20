@@ -11,6 +11,7 @@ of each.
 | `website` | none, bind-mounted into `nginx` | `bennetto.com/` | none: static files, live as soon as the server pulls | none | none |
 | `gengo` | `gengo-web`, `gengo-ws` | `bennetto.com/gengo/`, websocket on `:8765` | `docker/gengo-*.Dockerfile` | none | none |
 | `taking_the_story` | `taking-the-story` | `bennetto.com/story/` | `docker/taking-the-story.Dockerfile` | none: SQLite in volume `taking_the_story_data`, schema created on startup | none |
+| `football-graphs` | none, `web/` bind-mounted into `nginx` | `bennetto.com/football/` | none: static files, live as soon as the server pulls. The game files are not in git: `scripts/fetch-football.sh`, run daily at 11:00 UTC by cron, fetches them from the repo's GitHub release `games` into `/var/www/football-games`, also bind-mounted | none | none |
 | `bookclub` | `bookclub` | `bookclub.bennetto.com` | `bookclub/Dockerfile` | `alembic upgrade head` on every container start | run `pytest` if the repo has tests; any new env var must be added to `bookclub.env` on the server *before* deploying |
 
 nginx routes requests by host and path (`nginx/conf.d/`). Secrets for bookclub
@@ -26,6 +27,10 @@ Host website
   User ubuntu
   IdentityFile <the instance's key>
 ```
+
+football-graphs' game files are built by a GitHub Actions workflow in that repo,
+not on the server. Its log on the server is `/tmp/fetch-football.log`; to fetch
+at once, run `~/bennetto-infra/scripts/fetch-football.sh` there.
 
 To run the whole stack locally over HTTP at `http://localhost:8080`:
 `docker compose -f docker-compose.yml -f docker-compose.local.yml up`.
@@ -111,7 +116,7 @@ On a fresh Ubuntu EC2 instance:
 ```
 git clone --recurse-submodules https://github.com/jackbenn/bennetto-infra.git
 cd bennetto-infra
-bash scripts/setup-server.sh      # Docker, certbot, swap, renewal cron
+bash scripts/setup-server.sh      # Docker, certbot, jq, swap, cron jobs
 ```
 
 Then log out and back in for the docker group to take effect, and:

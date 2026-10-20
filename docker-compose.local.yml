@@ -11,6 +11,9 @@ services:
     volumes:
       # Mounts after the base conf.d, so this shadows it (last mount wins)
       - ./nginx/local.conf.d:/etc/nginx/conf.d:ro
+      # the game files the football-graphs build writes, in place of the
+      # server's fetched ones
+      - ./football-graphs/games:/var/www/football-games:ro
 
   # gengo JS connects directly to ws://hostname:8765, bypassing nginx
   gengo-ws:

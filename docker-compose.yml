@@ -7,6 +7,8 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./website:/var/www/html:ro
+      - ./football-graphs/web:/var/www/football:ro
+      - /var/www/football-games:/var/www/football-games:ro
       - /var/www/certbot:/var/www/certbot:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:

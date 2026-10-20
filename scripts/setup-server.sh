@@ -34,6 +34,9 @@ sudo usermod -aG docker "$USER"
 echo "=== Installing Certbot ==="
 sudo apt-get install -y -q certbot
 
+echo "=== Installing jq (for scripts/fetch-football.sh) ==="
+sudo apt-get install -y -q jq
+
 echo "=== Adding swap (1 GB) ==="
 if ! grep -q '/swapfile' /etc/fstab; then
     sudo fallocate -l 1G /swapfile
@@ -52,6 +55,15 @@ sudo mkdir -p /var/www/certbot
 echo "=== Setting up cert renewal cron job ==="
 sudo tee /etc/cron.d/certbot-renew << 'EOF'
 0 3 * * * root certbot renew --quiet --webroot -w /var/www/certbot --deploy-hook "docker compose -f /home/ubuntu/bennetto-infra/docker-compose.yml exec nginx nginx -s reload"
+EOF
+
+echo "=== Fetching football-graphs' game files, and daily from now on ==="
+sudo mkdir -p /var/www/football-games
+sudo chown "$USER" /var/www/football-games
+"$INFRA_DIR/scripts/fetch-football.sh"
+# 11:00 UTC, an hour after the release's daily build (EC2's Ubuntu runs in UTC)
+sudo tee /etc/cron.d/football-games << EOF
+0 11 * * * $USER $INFRA_DIR/scripts/fetch-football.sh > /tmp/fetch-football.log 2>&1
 EOF
 
 echo ""

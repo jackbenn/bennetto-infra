@@ -10,3 +10,6 @@
 [submodule "bookclub"]
 	path = bookclub
 	url = https://github.com/jackbenn/bookclub
+[submodule "football-graphs"]
+	path = football-graphs
+	url = https://github.com/jackbenn/football-graphs
