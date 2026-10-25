@@ -9,7 +9,7 @@ of each.
 | Submodule | Compose service(s) | Served at | Build | Migrations | Before deploying |
 |---|---|---|---|---|---|
 | `website` | none, bind-mounted into `nginx` | `bennetto.com/` | none: static files, live as soon as the server pulls | none | none |
-| `gengo` | `gengo-web`, `gengo-ws` | `bennetto.com/gengo/`, websocket on `:8765` | `docker/gengo-*.Dockerfile` | none | none |
+| `gengo` | `gengo-web`, `gengo-ws` | `bennetto.com/gengo/`, websocket at `/gengo/ws` | `docker/gengo-*.Dockerfile` | none | none |
 | `taking_the_story` | `taking-the-story` | `bennetto.com/story/` | `docker/taking-the-story.Dockerfile` | none: SQLite in volume `taking_the_story_data`, schema created on startup | none |
 | `football-graphs` | none, `web/` bind-mounted into `nginx` | `bennetto.com/football/` | none: static files, live as soon as the server pulls. The game files are not in git: `scripts/fetch-football.sh`, run daily at 11:00 UTC by cron, fetches them from the repo's GitHub release `games` into `/var/www/football-games`, also bind-mounted | none | none |
 | `bookclub` | `bookclub` | `bookclub.bennetto.com` | `bookclub/Dockerfile` | `alembic upgrade head` on every container start | run `pytest` if the repo has tests; any new env var must be added to `bookclub.env` on the server *before* deploying |
