@@ -30,8 +30,8 @@ services:
       context: .
       dockerfile: docker/gengo-ws.Dockerfile
     restart: unless-stopped
-    ports:
-      - "8765:8765"
+    expose:
+      - "8765"    # reached only through nginx's /gengo/ws
 
   taking-the-story:
     build:
