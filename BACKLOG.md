@@ -1,6 +1,6 @@
 # Backlog — bennetto-infra
 
-Prefix: INFRA · Next ID: 7 · Schema: v1
+Prefix: INFRA · Next ID: 8 · Schema: v1
 
 ## [INFRA-1] Stop every deploy from recreating every container
 
@@ -141,3 +141,19 @@ unused.
 
 ### Acceptance criteria
 - [ ] The security group allows inbound only 22, 80 and 443
+
+## [INFRA-7] Fill in the README's Getting started
+
+- **Status:** idea
+- **Priority:** unknown
+- **Size:** quick
+- **Depends on:** none
+- **Tags:** docs, baseline
+- **Related:** META-6
+
+project-init (2026-10-27) wrote a skeleton `README.md` with TODOs. Fill it in
+with META-6's `repo-docs` skill: the submodule layout (one checkout of each
+site, under this repo), local runs with `docker-compose.local.yml`, deploying
+through the `publish-site` skill and `scripts/deploy.sh`, and what is not in
+the repo (the EC2 server, certificates, secrets). Point at `DEPLOY.md` rather
+than repeating it.
