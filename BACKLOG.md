@@ -5,7 +5,7 @@ Prefix: INFRA · Next ID: 8 · Schema: v1
 ## [INFRA-1] Stop every deploy from recreating every container
 
 - **Status:** idea
-- **Priority:** unknown
+- **Priority:** P3
 - **Size:** quick
 - **Depends on:** none
 - **Tags:** deploy, bug
@@ -35,7 +35,7 @@ services restart.
 ## [INFRA-2] Rebuild gengo-ws only when the game server's code changes
 
 - **Status:** idea
-- **Priority:** unknown
+- **Priority:** P3
 - **Size:** quick
 - **Depends on:** INFRA-1
 - **Tags:** deploy, docker
@@ -55,7 +55,7 @@ restart only `gengo-web`.
 ## [INFRA-3] Don't restart a service that is in use without asking
 
 - **Status:** idea
-- **Priority:** unknown
+- **Priority:** P3
 - **Size:** session
 - **Depends on:** INFRA-1
 - **Tags:** deploy
@@ -85,7 +85,7 @@ Depends on INFRA-1, because until then the dry run lists every container.
 ## [INFRA-4] gengo-ws prints nothing to `docker compose logs`
 
 - **Status:** idea
-- **Priority:** unknown
+- **Priority:** P3
 - **Size:** quick
 - **Depends on:** none
 - **Tags:** logging, docker
