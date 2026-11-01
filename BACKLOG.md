@@ -4,7 +4,7 @@ Prefix: INFRA · Next ID: 8 · Schema: v1
 
 ## [INFRA-1] Stop every deploy from recreating every container
 
-- **Status:** idea
+- **Status:** active
 - **Priority:** P3
 - **Size:** quick
 - **Depends on:** none
@@ -31,6 +31,17 @@ services restart.
 ### Acceptance criteria
 - [ ] A deploy that changes only one site recreates only that site's containers (check the `Recreate` lines in `/tmp/deploy.log`)
 - [ ] A deploy with no changes recreates nothing
+
+### Notes
+- 2026-11-01: tried the compose-file route first, so manual `docker compose up`
+  runs would be covered too. On the server (Compose v5.1.1, buildx v0.31.1,
+  containerd snapshotter), `build: provenance: false` and `provenance: false` +
+  `sbom: false` both still gave a new bookclub image ID every build;
+  `BUILDX_NO_DEFAULT_ATTESTATIONS=1` gave the same ID three times. So the
+  variable is exported in `scripts/deploy.sh`, and `DEPLOY.md`'s manual
+  command now includes it.
+- 2026-11-01: the first deploy after this still recreates every service, since
+  the earlier images were built with attestations.
 
 ## [INFRA-2] Rebuild gengo-ws only when the game server's code changes
 

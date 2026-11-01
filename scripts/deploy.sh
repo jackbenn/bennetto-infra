@@ -89,6 +89,12 @@ ssh "$SSH_HOST" "
     echo '  -> Pulling latest...'
     git pull --recurse-submodules
     echo '  -> Starting build (detached)...'
+    # Without this, BuildKit attaches a fresh provenance attestation to every
+    # build, so every image gets a new ID even when fully cached and compose
+    # recreates every container (ending gengo games). Compose's own
+    # 'provenance: false' / 'sbom: false' build keys did not stop it (tested
+    # 2026-11-01, Compose v5.1.1); this variable does. See INFRA-1.
+    export BUILDX_NO_DEFAULT_ATTESTATIONS=1
     nohup docker compose up -d --build > /tmp/deploy.log 2>&1 &
     echo \"  -> Build running as PID \$! — follow with: ssh $SSH_HOST tail -f /tmp/deploy.log\"
 "

@@ -59,6 +59,15 @@ To run the whole stack locally over HTTP at `http://localhost:8080`:
      (`nohup`, so it survives the SSH session ending). Build output goes to
      `/tmp/deploy.log` on the server.
 
+   Only services whose image actually changed are recreated; the rest keep
+   running, so a deploy that touches only one site leaves gengo games alone
+   unless gengo changed. This relies on two things. The script exports
+   `BUILDX_NO_DEFAULT_ATTESTATIONS=1` for the build: without it BuildKit gives
+   every image a new ID on every build and every container restarts. And the
+   server's build cache must survive: after a `docker system prune -a`, the
+   next deploy rebuilds and restarts everything (INFRA-5). The `Recreate` lines
+   in `/tmp/deploy.log` show what restarted.
+
 3. Watch the build: `ssh website tail -f /tmp/deploy.log`. It is done when
    compose reports each container `Started` or `Running`. Then check the site.
 
@@ -125,8 +134,10 @@ Then log out and back in for the docker group to take effect, and:
    secrets.
 2. Point DNS for `bennetto.com`, `www.bennetto.com` and `bookclub.bennetto.com`
    at the instance, and update the `website` SSH alias on your machine.
-3. Run `./scripts/deploy.sh` from your machine, or `docker compose up -d --build`
-   on the server.
+3. Run `./scripts/deploy.sh` from your machine, or
+   `BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose up -d --build` on the server
+   (without the variable, every container restarts; see step 2 of "Making a
+   change to a site live").
 4. Once the sites answer on HTTP, run `bash scripts/issue-cert.sh` on the
    server. Renewal after that is the cron job that `setup-server.sh` installed.
 
