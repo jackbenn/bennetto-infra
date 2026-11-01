@@ -49,6 +49,16 @@ else
     echo "Swap already configured, skipping."
 fi
 
+echo "=== Capping the systemd journal at 150 MB ==="
+# The root volume is small (11 GB); journald's default allows 10% of it.
+sudo mkdir -p /etc/systemd/journald.conf.d
+sudo tee /etc/systemd/journald.conf.d/size.conf > /dev/null << 'EOF'
+[Journal]
+SystemMaxUse=150M
+EOF
+sudo systemctl restart systemd-journald
+sudo journalctl --vacuum-size=150M
+
 echo "=== Creating certbot webroot directory ==="
 sudo mkdir -p /var/www/certbot
 

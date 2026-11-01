@@ -131,7 +131,7 @@ On a fresh Ubuntu EC2 instance:
 ```
 git clone --recurse-submodules https://github.com/jackbenn/bennetto-infra.git
 cd bennetto-infra
-bash scripts/setup-server.sh      # Docker, certbot, jq, swap, cron jobs
+bash scripts/setup-server.sh      # Docker, certbot, jq, swap, journal cap, cron jobs
 ```
 
 Then log out and back in for the docker group to take effect, and:
