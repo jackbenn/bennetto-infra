@@ -1,6 +1,6 @@
 # Backlog — bennetto-infra
 
-Prefix: INFRA · Next ID: 8 · Schema: v1
+Prefix: INFRA · Next ID: 9 · Schema: v1
 
 ## [INFRA-1] Stop every deploy from recreating every container
 
@@ -9,6 +9,7 @@ Prefix: INFRA · Next ID: 8 · Schema: v1
 - **Size:** quick
 - **Depends on:** none
 - **Tags:** deploy, bug
+- **Commits:** 40e95da
 
 `deploy.sh` runs `docker compose up -d --build`, and on the server every built
 service gets a new image ID on every build, even when every layer is cached. The
@@ -30,7 +31,7 @@ services restart.
 
 ### Acceptance criteria
 - [ ] A deploy that changes only one site recreates only that site's containers (check the `Recreate` lines in `/tmp/deploy.log`)
-- [ ] A deploy with no changes recreates nothing
+- [x] A deploy with no changes recreates nothing
 
 ### Notes
 - 2026-11-01: tried the compose-file route first, so manual `docker compose up`
@@ -42,6 +43,11 @@ services restart.
   command now includes it.
 - 2026-11-01: the first deploy after this still recreates every service, since
   the earlier images were built with attestations.
+- 2026-11-01: deployed 40e95da with the gengo and taking_the_story pointers
+  (bc0b103); as expected it recreated all four built services. An immediate
+  second deploy with no changes recreated nothing: every container `Running`.
+  The single-site criterion is still to check, on the next real deploy that
+  changes one site.
 
 ## [INFRA-2] Rebuild gengo-ws only when the game server's code changes
 
@@ -116,22 +122,44 @@ in `start_server.py`.
 
 ## [INFRA-5] Keep the server's Docker build cache
 
-- **Status:** idea
+- **Status:** active
 - **Priority:** unknown
 - **Size:** quick
 - **Depends on:** none
 - **Tags:** docker, server
+- **Related:** INFRA-1, INFRA-8
 
 The server's shell history shows `docker system prune -a` run several times,
 presumably to free disk: the root volume is 11 GB and was 75% full on
 2026-10-25. That deletes the whole build cache, so the next deploy rebuilds every
 image from scratch (the Oct 25 deploy rebuilt even bookclub's `apt-get` layer)
-and, with INFRA-1, would recreate every container regardless.
+and recreates every container, undoing INFRA-1.
 
-**What to do:** grow the EBS volume, or replace the manual prune with something
-that keeps recent cache, for example a weekly cron running `docker builder
-prune --filter until=168h` and `docker image prune`. Note the choice in
-`DEPLOY.md` and `setup-server.sh`.
+The instance is a t3.micro and Jack doesn't want to keep much, so the fix is to
+bound the cache rather than grow the volume. On 2026-11-01 the disk was 79%
+full (2.3 GB free). Docker took about 4.5 GB: the five current images about
+1.3 GB and the build cache 3.2 GB. Only 0.70 GB of that cache had been used
+by that day's builds; the rest was 0.68 GB last used a week before, 1.27 GB three
+to five weeks before and 0.53 GB two months before, mostly superseded `pip
+install` layers.
+
+**What to do:** at the end of the remote build in `scripts/deploy.sh`, run
+`docker builder prune` capped at about 1 GB, plus `docker image prune -f`. The
+cache only grows on a build, so pruning right after one needs no cron job. Cap
+by size, which evicts least recently used entries, rather than by age (`--filter
+until=168h`), which would keep a busy week's cache regardless of size and drop
+an untouched site's cache even when there is room. Not BuildKit's GC in
+`/etc/docker/daemon.json`: enabling it restarts the daemon and every container.
+
+Before writing it, check on the server (`docker builder prune --help`) which flag
+means "prune least recently used until under N": Docker has been replacing
+`--keep-storage` with `--max-used-space` and `--reserved-space`, which mean
+different things. Note the policy in `DEPLOY.md`, with a warning not to run
+`docker system prune -a` by hand.
+
+### Acceptance criteria
+- [ ] After a deploy, `docker buildx du` reports at most about 1 GB of build cache
+- [ ] A deploy straight after a pruning deploy, with no changes, still recreates nothing and rebuilds nothing (every step `CACHED` in `/tmp/deploy.log`)
 
 ## [INFRA-6] Remove the open port 5000 from the EC2 security group
 
@@ -168,3 +196,26 @@ site, under this repo), local runs with `docker-compose.local.yml`, deploying
 through the `publish-site` skill and `scripts/deploy.sh`, and what is not in
 the repo (the EC2 server, certificates, secrets). Point at `DEPLOY.md` rather
 than repeating it.
+
+## [INFRA-8] Cap the systemd journal on the server
+
+- **Status:** idea
+- **Priority:** unknown
+- **Size:** quick
+- **Depends on:** none
+- **Tags:** logging, server
+- **Related:** INFRA-5
+
+On 2026-11-01 `/var/log/journal` was 456 MB of the 11 GB root volume (79%
+full). `journald.conf` sets no limit, so the default applies: 10% of the
+filesystem, about 1.1 GB here, so it can still roughly double.
+
+**What to do:** add a drop-in such as `/etc/systemd/journald.conf.d/size.conf`
+with `SystemMaxUse=` set to something small (100–200 MB), restart
+`systemd-journald`, and vacuum the existing journal down to it
+(`journalctl --vacuum-size=`). Write the drop-in from `setup-server.sh` so a
+rebuilt server gets it too, and mention it in `DEPLOY.md`.
+
+### Acceptance criteria
+- [ ] `journalctl --disk-usage` reports no more than the cap
+- [ ] `setup-server.sh` writes the drop-in

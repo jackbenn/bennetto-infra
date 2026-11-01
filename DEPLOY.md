@@ -65,8 +65,14 @@ To run the whole stack locally over HTTP at `http://localhost:8080`:
    `BUILDX_NO_DEFAULT_ATTESTATIONS=1` for the build: without it BuildKit gives
    every image a new ID on every build and every container restarts. And the
    server's build cache must survive: after a `docker system prune -a`, the
-   next deploy rebuilds and restarts everything (INFRA-5). The `Recreate` lines
-   in `/tmp/deploy.log` show what restarted.
+   next deploy rebuilds and restarts everything. The `Recreate` lines in
+   `/tmp/deploy.log` show what restarted.
+
+   To keep the small disk from filling, the script then trims the build cache
+   to its most recently used 1 GB (`docker builder prune --max-used-space 1GB`)
+   and removes dangling images. That keeps what the current images need, so
+   **don't run `docker system prune -a` by hand** to free space. If the disk is
+   still short, lower the cap or prune the build cache the same way.
 
 3. Watch the build: `ssh website tail -f /tmp/deploy.log`. It is done when
    compose reports each container `Started` or `Running`. Then check the site.

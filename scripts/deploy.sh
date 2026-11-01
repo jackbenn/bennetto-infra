@@ -95,7 +95,14 @@ ssh "$SSH_HOST" "
     # 'provenance: false' / 'sbom: false' build keys did not stop it (tested
     # 2026-11-01, Compose v5.1.1); this variable does. See INFRA-1.
     export BUILDX_NO_DEFAULT_ATTESTATIONS=1
-    nohup docker compose up -d --build > /tmp/deploy.log 2>&1 &
+    # After a successful build, trim the build cache to its 1 GB most recently
+    # used and drop dangling images: the disk is small, and the cache only
+    # grows on a build. A whole-cache prune would make the next deploy rebuild
+    # and restart everything. See INFRA-5.
+    nohup sh -c 'docker compose up -d --build &&
+        echo \"-> Pruning build cache to 1GB...\" &&
+        docker builder prune -f --max-used-space 1GB &&
+        docker image prune -f' > /tmp/deploy.log 2>&1 &
     echo \"  -> Build running as PID \$! — follow with: ssh $SSH_HOST tail -f /tmp/deploy.log\"
 "
 
