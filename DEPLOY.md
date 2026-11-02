@@ -69,7 +69,7 @@ To run the whole stack locally over HTTP at `http://localhost:8080`:
    `/tmp/deploy.log` show what restarted.
 
    To keep the small disk from filling, the script then trims the build cache
-   to its most recently used 1 GB (`docker builder prune --max-used-space 1GB`)
+   to its most recently used 2 GB (`docker builder prune --max-used-space 2GB`)
    and removes dangling images. That keeps what the current images need, so
    **don't run `docker system prune -a` by hand** to free space. If the disk is
    still short, lower the cap or prune the build cache the same way.
