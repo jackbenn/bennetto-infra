@@ -2,8 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Keep these two steps identical to gengo-ws.Dockerfile's, so BuildKit builds
+# the dependency layer once and both images share it. See INFRA-2.
 COPY gengo/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn==26.2.0
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --no-cache-dir gunicorn==26.2.0
 
 COPY gengo/ .
 
