@@ -1,6 +1,6 @@
 # Backlog — bennetto-infra
 
-Prefix: INFRA · Next ID: 10 · Schema: v1
+Prefix: INFRA · Next ID: 11 · Schema: v1
 
 ## [INFRA-2] Rebuild gengo-ws only when the game server's code changes
 
@@ -80,7 +80,7 @@ in `start_server.py`.
 
 ## [INFRA-6] Remove the open port 5000 from the EC2 security group
 
-- **Status:** idea
+- **Status:** done
 - **Priority:** unknown
 - **Size:** quick
 - **Depends on:** none
@@ -96,7 +96,13 @@ and the security group rule removed).
 unused.
 
 ### Acceptance criteria
-- [ ] The security group allows inbound only 22, 80 and 443
+- [x] The security group allows inbound only 22, 80 and 443
+
+### Notes
+- 2026-11-03: nothing listened on 5000 and the group is attached only to
+  `i-02521ba84717051f6`, so Jack revoked `sgr-0c815ae459449a286`. Inbound is
+  now 22 (IPv4), 80 and 443 (IPv4 and IPv6); the other rules are all in use.
+  Port 5000 now times out from outside; the sites and SSH still answer.
 
 ## [INFRA-7] Fill in the README's Getting started
 
@@ -139,3 +145,28 @@ the base then becomes a deliberate step, done for security fixes; note in
 ### Acceptance criteria
 - [ ] All four Dockerfiles use the same pinned digest
 - [ ] `DEPLOY.md` says how to update the base image
+
+## [INFRA-10] Script to create and check the EC2 security group
+
+- **Status:** idea
+- **Priority:** unknown
+- **Size:** quick
+- **Depends on:** none
+- **Tags:** security, server
+- **Related:** INFRA-6
+
+The security group's rules live only in AWS and in the table in `DEPLOY.md`
+("Firewall (EC2 security group)"). Moving to another region or VPC means
+recreating them by hand, and nothing notices a stray rule: port 5000 stayed
+open for months after Flask stopped serving it directly (INFRA-6).
+
+**What to do:** add `scripts/security-group.sh`, using the AWS CLI. With no
+arguments it creates a properly named group (say `bennetto-web`) in a given
+VPC with exactly the rules in `DEPLOY.md`. With `--check <group-id>` it lists
+any rule missing from, or extra to, that list and exits non-zero if there are
+any. Keep the rule list in one place in the script, and point `DEPLOY.md`'s
+table at it (or generate the table from it).
+
+### Acceptance criteria
+- [ ] `scripts/security-group.sh --check sg-0eea6124015052947` reports no differences
+- [ ] Creating a group with the script in a scratch VPC gives exactly the rules in `DEPLOY.md`

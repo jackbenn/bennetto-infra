@@ -126,6 +126,27 @@ The first character of each line:
 
 ## Rebuilding the server from scratch
 
+### Firewall (EC2 security group)
+
+The instance's inbound traffic is controlled by security group
+`sg-0eea6124015052947` (named `launch-wizard-19`, VPC `vpc-9f5506fa`,
+`us-west-2`), which nothing else uses. It should allow inbound only:
+
+| Port | From | For |
+|---|---|---|
+| 22 | `0.0.0.0/0` (IPv4 only, deliberately) | SSH, including `deploy.sh` |
+| 80 | `0.0.0.0/0` and `::/0` | HTTP, redirects and Let's Encrypt challenges |
+| 443 | `0.0.0.0/0` and `::/0` | HTTPS |
+
+Outbound is the default allow-all. Nothing else needs a port: the apps listen
+only on Docker's internal network, reached through nginx.
+
+When launching a new instance in the same region and VPC, choose **this
+existing group** instead of letting the launch wizard create one. Elsewhere,
+create a group with the rules above (INFRA-10 is a script for that).
+
+### The instance
+
 On a fresh Ubuntu EC2 instance:
 
 ```
