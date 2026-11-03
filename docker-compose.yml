@@ -1,3 +1,12 @@
+# Cap each container's Docker log at 3 files of 10 MB. Docker's default keeps
+# it whole until the container is recreated, and nginx's (every request) grew
+# 35 MB in 12 days on the small disk. See INFRA-11.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   nginx:
     image: nginx:alpine
@@ -16,12 +25,14 @@ services:
       - taking-the-story
       - bookclub
     restart: unless-stopped
+    logging: *logging
 
   gengo-web:
     build:
       context: .
       dockerfile: docker/gengo-web.Dockerfile
     restart: unless-stopped
+    logging: *logging
     expose:
       - "5000"
 
@@ -30,6 +41,7 @@ services:
       context: .
       dockerfile: docker/gengo-ws.Dockerfile
     restart: unless-stopped
+    logging: *logging
     expose:
       - "8765"    # reached only through nginx's /gengo/ws
 
@@ -40,6 +52,7 @@ services:
     volumes:
       - taking_the_story_data:/data
     restart: unless-stopped
+    logging: *logging
     expose:
       - "8000"
 
@@ -52,6 +65,7 @@ services:
     env_file:
       - ./bookclub.env
     restart: unless-stopped
+    logging: *logging
     expose:
       - "8000"
 

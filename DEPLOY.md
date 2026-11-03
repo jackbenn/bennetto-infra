@@ -74,6 +74,10 @@ To run the whole stack locally over HTTP at `http://localhost:8080`:
    **don't run `docker system prune -a` by hand** to free space. If the disk is
    still short, lower the cap or prune the build cache the same way.
 
+   Container logs (`docker compose logs`) are capped too, in
+   `docker-compose.yml`: three files of 10 MB per container, so about 150 MB at
+   most across the five.
+
 3. Watch the build: `ssh website tail -f /tmp/deploy.log`. It is done when
    compose reports each container `Started` or `Running`. Then check the site.
 
