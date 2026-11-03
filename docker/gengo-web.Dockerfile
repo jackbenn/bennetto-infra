@@ -11,4 +11,8 @@ RUN pip install --no-cache-dir gunicorn==26.2.0
 
 COPY gengo/ .
 
+# Send prints straight to `docker compose logs` (stdout is otherwise fully
+# buffered). See INFRA-4.
+ENV PYTHONUNBUFFERED=1
+
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "gengo.app.routes:app"]

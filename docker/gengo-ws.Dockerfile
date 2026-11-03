@@ -15,4 +15,8 @@ COPY gengo/gengo/__init__.py gengo/
 COPY gengo/gengo/server/ gengo/server/
 COPY gengo/gengo/src/ gengo/src/
 
+# Python fully buffers stdout when it isn't a terminal, so the server's prints
+# never reached `docker compose logs`. See INFRA-4.
+ENV PYTHONUNBUFFERED=1
+
 CMD ["python", "start_server.py", "--port", "8765"]
