@@ -1,0 +1,11 @@
+# Build context for gengo-web.Dockerfile only (BuildKit reads
+# <Dockerfile>.dockerignore beside the Dockerfile in place of a root
+# .dockerignore). The context is the whole bennetto-infra repo, so allow only
+# what the image needs: then a change to gengo's README, backlog, tests or the
+# other sites leaves the image unchanged and gengo-web keeps running. See
+# INFRA-2.
+*
+!gengo/requirements.txt
+!gengo/gengo/
+gengo/gengo/test/
+**/__pycache__
