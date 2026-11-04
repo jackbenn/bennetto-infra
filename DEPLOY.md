@@ -85,6 +85,24 @@ No separate migration step is needed. bookclub's Dockerfile CMD runs
 `alembic upgrade head` before starting the server, so its migrations run on
 every deploy. The other apps have no migrations.
 
+## Updating the Python base image
+
+All four built images start from `python:3.11-slim` pinned to one digest
+(`FROM python:3.11-slim@sha256:…`), so Docker Hub moving the tag changes
+nothing here. That keeps deploys from rebuilding and restarting every site
+whenever upstream publishes, and keeps old base images out of the build cache.
+The cost is that security fixes in the base arrive only when you update it.
+
+To update, roughly monthly or when a Python or Debian security fix matters:
+
+1. `scripts/bump-python-base.sh` rewrites the `FROM` line in
+   `docker/gengo-web.Dockerfile`, `docker/gengo-ws.Dockerfile`,
+   `docker/taking-the-story.Dockerfile` and `bookclub/Dockerfile` to the tag's
+   current digest. Keep all four on the same digest so they share its layers.
+2. Commit `bookclub/Dockerfile` in bookclub, and the other three here.
+3. Deploy when no one is playing gengo: every image rebuilds its `pip install`
+   layer and every built service restarts.
+
 ## When the script stops
 
 **A submodule has diverged from its origin.** Commits were made in this
